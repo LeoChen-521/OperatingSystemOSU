@@ -1,0 +1,49 @@
+Question 1: 
+Assuming that the following JOS kernel code is correct, what type should variable x have, uintptr_t or physaddr_t?
+
+    Variable x should be type uintptr_t. The reason for that is because *value = 10 assigns *value a value, in this way, *value is a virtual address. Therefore, x is also a virtual address. JOS could only dereference and setting a value to the virtual address.
+
+Question 2: 
+What entries (rows) in the page directory have been filled in at this point? What addresses do they map and where do they point? In other words, fill out this table as much as possible:
+
+Entry   |   Base Virtual Address   |   Points to(logically)                                
+-------------------------------------------------------------------------------------------
+1023    |   0xffc0000              ｜  Page table for top 4MB of physical memory           
+-------------------------------------------------------------------------------------------
+1022    |   0xff80000              ｜  Page table for second to top 4MB of physical memory 
+-------------------------------------------------------------------------------------------
+.       |
+-------------------------------------------------------------------------------------------
+.       |
+-------------------------------------------------------------------------------------------
+.       |
+-------------------------------------------------------------------------------------------
+2       |   0x00800000             ｜ ?
+-------------------------------------------------------------------------------------------
+1       |   0x00400000             ｜ ?
+-------------------------------------------------------------------------------------------
+0       |   0x00000000             ｜ ?
+-------------------------------------------------------------------------------------------
+
+
+Question 3:
+We have placed the kernel and user environment in the same address space. Why will user programs not be able to read or write the kernel’s memory? What specific mechanisms protect the kernel memory?
+
+    Because the virtual memory is divided into multiple segments, and each segment has different permission. The permission bits protect the kernel memory. The kernel memory is not added to the page_free_list so there is no valid virtual address for the users.
+
+
+Question 4:
+What is the maximum amount of physical memory that this operating system can support? Why?
+
+    The maximum amount of physical memory that this operating system can support is 256MB. Because there is 4MB of space reserved for UPAGES. It can store 512 physical page frames, and each struct PageInfo is 8 bytes, each page is 4096 bytes. So the maximum physical memory is 512 * 1024 * 4096 = 2GB. We mapped physical address to virtual address from 0x0fffffff to 0xffffffff, therefore, it allows only 256MB.
+
+Question 5:
+How much space overhead is there for managing memory, if we actually had the maximum amount of physical memory? How is this overhead broken down?
+
+    pagetables:  2MB. Pagedir is 2^10 * 4 bytes = 4KB. 1024 pages * 4086 bytes = 4MB physical memory, and 2GB/4MB = 512 pagetables, and  then takes 512 * 4096 bytes = 2MB. 
+struct PageInfo: 4MB.
+
+Question 6:
+Revisit the page table setup in kern/entry.S and kern/entrypgdir.c. Immediately after we turn on paging, EIP is still a low number (a little over 1MB). At what point do we transition to running at an EIP above KERNBASE? What makes it possible for us to continue executing at a low EIP between when we enable paging and when we begin running at an EIP above KERNBASE? Why is this transition necessary?
+
+    When we transit (jump) to relocated in entry.s, we transition into running at virtual kernel address, an EIP above KERNBASE. We can still execute at the low EIP is because we mapped 4MB of virtual address 0x00000000-0x00400000 to physical addresses 0x00000000-0x00400000. The transition is necessary because it allows user programs to have virtual addresses and use the low address space.

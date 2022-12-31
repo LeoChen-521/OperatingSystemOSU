@@ -1,0 +1,17 @@
+1. What is the purpose of having an individual handler function for each exception/interrupt?
+
+Having an individual handler function for each exception/interrupt allows each kind of exception/interrupt to be solved by different handler function. Some handlers can deal with wrong/error code, some others cannot.
+
+2.. Did you have to do anything to make the user/softint program behave correctly? The grade script expects it to produce a general protection fault (trap 13), but softint’s code says int $14. Why should this produce interrupt vector 13? What happens if the kernel actually allows softint’s int $14 instruction to invoke the kernel’s page fault handler (which is interrupt vector 14)?
+
+No, I didn’t. The grade script expects it to produce a general protection fault (trap 13) because in the user status of the current system running, the privileges level is 3, and the INT instruction's privileges level is 0. The privileges level3 program cannot call the privileges level 0 program or that will cause a General protection Exception, trap 13. 
+
+3. The break point test case will either generate a break point exception or a general
+protection fault depending on how you initialized the break point entry in the IDT (i.e., your call to SETGATE from trap_init). Why? How do you need to set it up in order to get the breakpoint exception to work as specified above and what incorrect setup would cause it to trigger a general protection fault?
+
+In order to get the breakpoint exception, we set the DPL ( Descriptor Privileged Level )to 3. If I make an incorrect setup by setting DPL to 0, it would cause to trigger a general protection exception, because when a low privileged program execute/call the program with a higher level, it triggers the general protection exception.
+
+4. What do you think is the point of these mechanisms, particularly in light of what
+the user/softint test program does?
+
+The benefit of this mechanism is that it limits and prevents users from using malicious code to harm the kernel.

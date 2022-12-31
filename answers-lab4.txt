@@ -1,0 +1,7 @@
+Q1：Because paging is not allowed in boot.s, and the virtual address is equal to the physical address. Also the link address and the load address are equal. It is unnecessary to convert virtual address to a physical address in the boot.s. Because paging is not enabled in the mpentry.s and this file is linked at the address above KERNBASE. Thus, we need to get the physical address through the MPBOOTPHYS.
+
+Q2: The reason is that when the CPU runs kernel code, it uses the track. The CPU may use the previous data when using the stack. And the data in the stack can be cluttered if all CPUs use the same kernel stack
+
+Q3: The "e" is the struct Env in envs that maps to the address space of all envs in UENVS.
+
+Q4: If we do not save the environment's registers, we can not restore the previous environment. In the trap.c:trap, cur->env_tf = *tf will save the trapframe. The trapframe is pushed onto the stack in trapentry.S, and restored in trap.c:env_pop_tf. 
